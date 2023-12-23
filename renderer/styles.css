@@ -1,0 +1,143 @@
+.duplicates-container {
+    margin-bottom: 20px;
+}
+
+.duplicate-group {
+    margin-bottom: 10px;
+}
+
+.card {
+    display: flex; /* Layout child elements in a row */
+    justify-content: space-between; /* Positions content and button at opposite ends */
+    align-items: center; /* Aligns items vertically in the center */
+}
+
+/*[class^="duplicate-block-"] {*/
+/*    margin-bottom: 1rem; !* Spacing between each block *!*/
+/*}*/
+
+[class^="duplicate-block-"] ul {
+    list-style-type: none; /* Remove default list style */
+    padding: 0; /* Remove default padding */
+    display: flex; /* Maintain flexbox layout */
+    flex-direction: column; /* Stack items vertically */
+    margin-bottom: 1rem; /* Margin at the bottom of each card */
+}
+
+[class^="duplicate-block-"] ul li {
+    background: #fff; /* White background */
+    border-radius: 4px; /* Slight rounded corners like material cards */
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.18), 0 3px 10px rgba(0, 0, 0, 0.15); /* Material Design shadow */
+    overflow: hidden; /* Ensures no content spills out */
+    padding: 1rem; /* Padding inside the card */
+    margin: 0.25rem; /* Margin at the bottom of each card */
+}
+
+[class^="duplicate-block-"] ul li:hover {
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.18), 0 5px 15px rgba(0, 0, 0, 0.15); /* Elevated shadow on hover */
+}
+
+[class^="duplicate-block-"] ul li .card-content {
+    padding: 1rem; /* Padding inside the card */
+}
+
+.duplicate-group button {
+    margin-top: 5px;
+}
+
+.delete-button {
+    background-color: #ff4444; /* Red background */
+    color: white; /* White text */
+    border: none; /* No border */
+    padding: 8px 16px; /* Padding around the text */
+    text-align: center; /* Centered text */
+    text-decoration: none; /* No underline */
+    display: inline-block; /* Allows setting padding and margins */
+    font-size: 14px; /* Medium text size */
+    margin: 4px 2px; /* Margins for spacing around the button */
+    cursor: pointer; /* Changes cursor to a hand icon */
+    border-radius: 4px; /* Rounded corners */
+    transition: background-color 0.3s, color 0.3s; /* Smooth transition for hover state */
+}
+
+.delete-button:hover,
+.delete-button:focus {
+    background-color: #cc0000; /* Darker red background on hover/focus */
+    color: #fff; /* White text on hover/focus */
+    outline: none; /* Removes the outline on click */
+}
+
+@keyframes spin {
+    0% {
+        transform: rotate(0deg);
+    }
+    100% {
+        transform: rotate(360deg);
+    }
+}
+#your-button-id {
+    background-color: #6200EA; /* Material Design Purple 700 */
+    color: #FFFFFF; /* White text */
+    border: none; /* No border */
+    padding: 0.6em 1.2em; /* Vertical and horizontal padding */
+    border-radius: 4px; /* Rounded corners */
+    font-size: 1rem; /* Button text size */
+    text-transform: uppercase; /* Uppercase text */
+    font-weight: 500; /* Medium font weight */
+    letter-spacing: 0.02857em; /* Letter spacing as per Material Design */
+    transition: background-color 0.2s, box-shadow 0.2s; /* Smooth transition for hover state */
+    cursor: pointer; /* Changes cursor to a hand icon */
+    box-shadow: 0 3px 5px 0 rgba(0, 0, 0, 0.24); /* Shadow to elevate the button */
+    outline: none; /* Removes outline */
+    user-select: none; /* Prevent text select */
+    touch-action: manipulation; /* Improves the time between a physical tap and the showing of a focus state on mobile devices */
+}
+
+#your-button-id:hover {
+    background-color: #5f0aed; /* Slightly darker purple on hover */
+    box-shadow: 0 5px 11px 0 rgba(0, 0, 0, 0.24); /* Larger shadow on hover */
+}
+
+#your-button-id:active {
+    background-color: #9C47FC; /* Even darker purple when the button is clicked */
+}
+.center-container {
+    display: flex; /* Use flexbox layout */
+    justify-content: center; /* Center horizontally */
+    align-items: center; /* Center vertically */
+    height: 25vh; /* Full height of the viewport */
+    flex-direction: column; /* Stack children vertically */
+    gap: 20px; /* Space between spinner and button */
+}
+.mdc-list-divider-container {
+    display: flex;
+    align-items: center;
+}
+.mdc-list-divider {
+    flex-grow: 1;
+    height: 1px; /* change the height as needed */
+    background-color: #e0e0e0; /* Material Design guideline color for dividers */
+    margin: 8px 0; /* Material Design guideline spacing */
+}
+.title-span {
+    display: block; /* Ensures it's treated as a block-level element */
+    font-size: 2rem; /* Sets a large font size, adjust as needed */
+    font-weight: bold; /* Makes the font bold */
+    text-align: center; /* Centers the text horizontally */
+    /* Adds space to the top */
+    /* Adds space to the bottom */
+    color: #2E2E2E; /* Sets the text color, choose a color that matches your design */
+    background-color: #F0F0F0; /* A light background color to make it stand out, adjust as needed */
+    padding: 1rem; /* Adds padding inside the span for spacing around the text */
+    border-radius: 10px; /* Optional: rounds the corners of the background */
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1); /* Optional: adds a subtle shadow for depth */
+    max-width: 80%; /* Limits the width of the title span */
+    /* Together with margin-right centers the title span */
+    /* Together with margin-left centers the title span */
+    margin: 1rem auto;
+}
+
+/* If #title-span is at the top of the page, you might want to add some additional styles to the body to ensure there's no overlap */
+body {
+    padding-top: 1rem; /* Adds padding at the top of the body, adjust this value as needed */
+}
