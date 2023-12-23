@@ -32,7 +32,7 @@ ipcMain.on('open-file-dialog-for-directory', async (event) => {
     if (result.canceled === false) {
         const directoryPath = result.filePaths[0];
         const win = BrowserWindow.fromWebContents(event.sender);
-        scanDirectory(directoryPath, win);
+        await scanDirectory(directoryPath, win);
     }
 });
 ipcMain.on('delete-file', async (event, filePath, blockSelector) => {
