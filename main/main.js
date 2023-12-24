@@ -4,11 +4,13 @@ const fs = require('fs');
 const fsPromises = require('fs').promises;
 const crypto = require('crypto');
 const {promisify} = require('util');
+const NeDB = require("nedb");
 const readDir = promisify(fs.readdir);
 const stat = promisify(fs.stat);
 const unlinkAsync = promisify(fs.unlink);
 
 let win;
+let db = null;
 
 function createWindow() {
     win = new BrowserWindow({
@@ -119,3 +121,23 @@ async function generateChecksum(filePath) {
         stream.on('end', () => resolve(hash.digest('hex')));
     });
 }
+
+ipcMain.handle('select-database', async (event) => {
+    const { filePaths } = await dialog.showOpenDialog({ name: 'Please select a database',properties: ['openFile'] });
+    return filePaths[0]; // return the selected path
+});
+
+ipcMain.handle('save-database', async (event) => {
+    const { filePath } = await dialog.showSaveDialog({
+        filters: [{ name: 'NeDB Database', extensions: ['db'] }],
+    });
+    return filePath; // return the path as a string
+});
+
+ipcMain.on('set-database', (event, dbPath) => {
+    db = new NeDB({ filename: dbPath, autoload: true });
+});
+
+ipcMain.handle('get-database', async () => {
+    return db ? db : null;
+});

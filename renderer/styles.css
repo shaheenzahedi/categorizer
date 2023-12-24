@@ -18,6 +18,61 @@
     /* background: linear-gradient(-45deg, #e3eefe 0%, #efddfb 100%);*/
     transition: all 0.6s ease-in-out;
 }
+button {
+    background: #424242; /* Material dark theme surface color */
+    color: #fff; /* text primary color on dark theme */
+    border: none;
+    border-radius: 4px; /* Material Design standard border radius */
+    padding: 10px 20px;
+    margin: 8px 0; /* margin top for stacking */
+    font-size: 16px;
+    text-transform: uppercase; /* Material Design button text style */
+    font-weight: 500; /* Medium emphasis for text */
+    outline: none;
+    position: relative; /* Required for ripple effect positioning */
+    overflow: hidden; /* Required to contain the ripple effect within the button */
+    cursor: pointer;
+    transition: background-color 0.3s, box-shadow 0.2s;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.24), 0 4px 8px rgba(0,0,0,0.12); /* Material elevation */
+}
+
+button:hover {
+    background: #535353; /* Hover effect */
+    box-shadow: 0 4px 5px rgba(0,0,0,0.24), 0 8px 17px rgba(0,0,0,0.12); /* Elevated Material elevation */
+}
+
+button:active {
+    background: #333; /* Click effect */
+}
+button:disabled {
+    color: rgba(255, 255, 255, 0.38); /* Text color for disabled state with less opacity */
+    background: #373737; /* Background color for disabled state */
+    box-shadow: none; /* No elevation for disabled buttons */
+    cursor: default; /* Default cursor to indicate the button is not clickable */
+    pointer-events: none; /* Ensures the button doesn't react to clicks */
+}
+/* Ripple effect */
+button::after {
+    content: '';
+    background: rgba(255, 255, 255, 0.7);
+    display: block;
+    position: absolute;
+    padding-top: 300%;
+    padding-left: 350%;
+    margin-left: -20px!important;
+    margin-top: -120%;
+    opacity: 0;
+    transition: width 0.5s, height 0.5s, opacity 0.5s, margin 0.5s;
+}
+
+button:active::after {
+    padding: 0;
+    margin: 0;
+    opacity: 0.3;
+    transition: 0s;
+    width: 40px;
+    height: 40px;
+}
 #active:checked ~ .wrapper{
     /*left: 0;*/
     right:0;
