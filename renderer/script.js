@@ -19,24 +19,6 @@ loadDB.addEventListener('click', async () => {
     }
 });
 
-// document.getElementById('addValue').addEventListener('click', () => {
-//     const value = document.getElementById('inputValue').value;
-//     if (db && value) {
-//         db.insert({ value: value }, (err, newDoc) => {
-//             if (err) {
-//                 console.error('Error inserting document:', err);
-//             } else {
-//                 console.log('Added new document:', newDoc);
-//                 document.getElementById('inputValue').value = ''; // Clear the input box on success
-//             }
-//         });
-//     } else if (!db) {
-//         alert('Please load a database first.');
-//     } else {
-//         alert('Please enter a value.');
-//     }
-// });
-
 document.getElementById('saveDb').addEventListener('click', async () => {
     if (db) {
         const savePath = await ipcRenderer.invoke('save-database');
