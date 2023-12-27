@@ -45,13 +45,21 @@ async function addCategory(name, parentId) {
 }
 
 async function fillContainerViaParentId(parentId) {
-    console.log('entered fillContainerViaParentId with parent id', parentId)
+    if (parentId === '0') {
+        return Array.empty();
+    }
     let comboBoxes = []; // Initialize the array to collect combo boxes
     try {
         const categories = await ipcRenderer.invoke('find-category-by-parent', parentId);
         const comboBox = document.createElement('select');
         comboBox.className = 'category-combo'; // Assign a class for styling and identification
         comboBox.setAttribute('data-parent-id', parentId); // Store the parentId as a data attribute
+        if (categories.length > 0) {
+            const option = document.createElement('option');
+            option.value = 0;
+            option.textContent = 'Unselected';
+            comboBox.appendChild(option); // Add the category as an option in the comboBox
+        }
         for (const category of categories) {
             const option = document.createElement('option');
             option.value = category._id;
@@ -71,6 +79,7 @@ async function fillContainerViaParentId(parentId) {
         addInSubClass.addEventListener('click', () => {
             const comboBox = document.querySelector(`[data-parent-id='${parentId}']`);
             const selectedValue = comboBox.value; // The value of the selected <option>
+            if (selectedValue === '0') return;
             const dialogs = Dialogs()
             dialogs.prompt('Please enter a category:', ok => {
                 addCategory(ok, selectedValue);
@@ -83,15 +92,39 @@ async function fillContainerViaParentId(parentId) {
                 categoryContainer.innerHTML = '';
                 const comboBoxes = await fillContainerViaParentId(categoryId);
                 categoryContainer.append(...comboBoxes); // Use the spread operator to append all combo boxes
+            } else {
+                categoryContainer.innerHTML = '';
+                const comboBoxes = await fillContainerViaParentId(parentId);
+                const selectElement = [...comboBoxes].reverse().find(element => element.tagName === 'SELECT');
+                if (selectElement) {
+                    const options = selectElement.options;
+                    for (let option of options) {
+                        if (option.value === categoryId) {
+                            option.selected = true; // This will select the option by default
+                            break; // Exit the loop as we have found and selected the option
+                        }
+                    }
+                }
+                categoryContainer.append(...comboBoxes); // Use the spread operator to append all combo boxes
             }
         });
         comboBoxes.push(document.createElement('br'));
         comboBoxes.push(comboBox);
         comboBoxes.push(addInThisClass);
         comboBoxes.push(addInSubClass);
-        if (parentId != null) {
-            const parent = await ipcRenderer.invoke('find-category-by-id', parentId);
+        const parent = parentId === null ? null : await ipcRenderer.invoke('find-category-by-id', parentId);
+        if (parent != null && parent.length > 0) {
             let items = await fillContainerViaParentId(parent[0].parentId);
+            const selectElement = [...items].reverse().find(element => element.tagName === 'SELECT');
+            if (selectElement) {
+                const options = selectElement.options;
+                for (let option of options) {
+                    if (option.value === parentId) {
+                        option.selected = true; // This will select the option by default
+                        break; // Exit the loop as we have found and selected the option
+                    }
+                }
+            }
             comboBoxes = [...items, ...comboBoxes];
             return comboBoxes;
         }
