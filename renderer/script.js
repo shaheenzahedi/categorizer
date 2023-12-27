@@ -9,7 +9,6 @@ loadDB.addEventListener('click', async () => {
     try {
         const dbPath = await ipcRenderer.invoke('select-database');
         if (dbPath) {
-            db = new NeDB({ filename: dbPath, autoload: true });
             loadDB.textContent = 'Database selected';
             loadDB.disabled = true;
             console.log('Database loaded from:', dbPath);

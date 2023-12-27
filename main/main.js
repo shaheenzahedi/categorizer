@@ -98,7 +98,7 @@ async function scanDirectory(directoryPath, win) {
                     filesChecksumMap[checksum] = [itemPath];
                 }
                 processedFiles++;
-                win.webContents.send('update-progress-bar', { processedFiles, totalFiles });
+                win.webContents.send('update-progress-bar', {processedFiles, totalFiles});
             }
         }
     }
@@ -123,21 +123,87 @@ async function generateChecksum(filePath) {
 }
 
 ipcMain.handle('select-database', async (event) => {
-    const { filePaths } = await dialog.showOpenDialog({ name: 'Please select a database',properties: ['openFile'] });
-    return filePaths[0]; // return the selected path
+    const {filePaths} = await dialog.showOpenDialog({name: 'Please select a database', properties: ['openFile']});
+    let dbPath = filePaths[0];
+    if (!dbPath) return false;
+    db = new NeDB({filename: dbPath, autoload: true});
+    return true;
 });
 
 ipcMain.handle('save-database', async (event) => {
-    const { filePath } = await dialog.showSaveDialog({
-        filters: [{ name: 'NeDB Database', extensions: ['db'] }],
+    const {filePath} = await dialog.showSaveDialog({
+        filters: [{name: 'NeDB Database', extensions: ['db']}],
     });
     return filePath; // return the path as a string
 });
 
+ipcMain.handle('find-category-by-parent', async (event, parentId) => {
+    return new Promise((resolve, reject) => {
+        db.find({ type: 'category', parentId: parentId }, (err, docs) => {
+            if (err) {
+                console.error('Error finding categories by parent:', err);
+                reject(err); // Reject the promise if there's an error
+            } else {
+                console.log(`Found ${docs.length} categories with parent ID:`, parentId);
+                resolve(docs); // Resolve the promise with the found documents
+            }
+        });
+    });
+});
+ipcMain.handle('find-category-by-id', async (event, id) => {
+    return new Promise((resolve, reject) => {
+        db.find({ type: 'category', _id: id }, (err, docs) => {
+            if (err) {
+                console.error('Error finding category by ID:', err);
+                reject(err); // Reject the promise if there's an error
+            } else {
+                console.log(`Found category with ID:`, id);
+                resolve(docs); // Resolve the promise with the found documents
+            }
+        });
+    });
+});
+ipcMain.handle('add-category', async (event, args) => {
+    return new Promise((resolve, reject) => {
+        const newCategory = {
+            type: 'category', // This specifies that the document is of type 'category'
+            name: args.name,
+            parentId: args.parentId,
+            createdAt: new Date()
+        };
+
+        db.insert(newCategory, (err, newDoc) => {
+            if (err) {
+                console.error('Error adding category:', err);
+                reject(err);  // Reject the promise if there's an error
+            } else {
+                console.log('Added new category with ID:', newDoc._id);
+                resolve(newDoc);  // Resolve the promise with the new document
+            }
+        });
+    });
+});
+ipcMain.handle('find-all-categories', async (event) => {
+    return new Promise((resolve, reject) => {
+        // Query the database for documents where the type is 'category'.
+        db.find({ type: 'category' }, (err, docs) => {
+            if (err) {
+                // If there's an error, log it and reject the promise.
+                console.error('Error finding all categories:', err);
+                reject(new Error('Error finding all categories'));
+            } else {
+                // If the query is successful, resolve the promise with the category documents.
+                console.log('Found all categories:', docs);
+                resolve(docs);
+            }
+        });
+    });
+});
 ipcMain.on('set-database', (event, dbPath) => {
-    db = new NeDB({ filename: dbPath, autoload: true });
+    db = new NeDB({filename: dbPath, autoload: true});
 });
 
-ipcMain.handle('get-database', async () => {
-    return db ? db : null;
+ipcMain.handle('get-database-selected', async (event) => {
+    return db !== null;
 });
+

@@ -15,6 +15,7 @@
     "electron-packager": "^13.1.1"
   },
   "dependencies": {
+    "dialogs": "^2.0.1",
     "nedb": "^1.8.0"
   }
 }
