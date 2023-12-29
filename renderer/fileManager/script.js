@@ -3,6 +3,37 @@ const Dialogs = require('dialogs')
 
 let categoryContainer;
 document.addEventListener('DOMContentLoaded', async (event) => {
+    const dropArea = document.getElementById('file-drop-area');
+
+// For clicking on the area to open the dialog
+    dropArea.addEventListener('click', () => {
+        ipcRenderer.send('open-file-dialog');
+    });
+
+// For updating UI with selected file name
+    ipcRenderer.on('selected-file', (event, paths) => {
+        document.getElementById('file-info').textContent = `Selected file: ${paths[0]}`;
+    });
+
+// Drag and drop functionality
+    dropArea.addEventListener('dragover', (e) => {
+        e.preventDefault();
+        dropArea.classList.add('active');
+    });
+
+    dropArea.addEventListener('dragleave', (e) => {
+        e.preventDefault();
+        dropArea.classList.remove('active');
+    });
+
+    dropArea.addEventListener('drop', (e) => {
+        e.preventDefault();
+        dropArea.classList.remove('active');
+        const files = e.dataTransfer.files;
+        if (files.length > 0) {
+            document.getElementById('file-info').textContent = `Dropped file: ${files[0].path}`;
+        }
+    });
     const dialogs = Dialogs()
     // Request the data from NeDB when the DOM is fully loaded
     let databaseSelected = await ipcRenderer.invoke('get-database-selected');
@@ -68,6 +99,7 @@ async function fillContainerViaParentId(parentId) {
         }
         const addInThisClass = document.createElement('button');
         addInThisClass.textContent = 'Add in this class';
+        addInThisClass.className = 'add-cat';
         addInThisClass.addEventListener('click', () => {
             const dialogs = Dialogs()
             dialogs.prompt('Please enter a category:', ok => {
@@ -76,6 +108,7 @@ async function fillContainerViaParentId(parentId) {
         });
         const addInSubClass = document.createElement('button');
         addInSubClass.textContent = 'Add in sub class';
+        addInSubClass.className = 'add-sub-cat'
         addInSubClass.addEventListener('click', () => {
             const comboBox = document.querySelector(`[data-parent-id='${parentId}']`);
             const selectedValue = comboBox.value; // The value of the selected <option>

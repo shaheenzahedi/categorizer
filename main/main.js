@@ -24,7 +24,17 @@ function createWindow() {
 
     win.loadFile('renderer/index.html');
 }
-
+ipcMain.on('open-file-dialog', (event) => {
+    dialog.showOpenDialog({
+        properties: ['openFile']
+    }).then(result => {
+        if (!result.canceled) {
+            event.sender.send('selected-file', result.filePaths);
+        }
+    }).catch(err => {
+        console.log(err);
+    });
+});
 app.whenReady().then(createWindow);
 
 ipcMain.on('open-file-dialog-for-directory', async (event) => {
