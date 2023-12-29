@@ -68,6 +68,10 @@ function createDeleteButton(filePath) {
 ipcRenderer.on('file-deleted', (event, filePath, blockSelector) => {
     const listItem = document.querySelector(`li[data-filepath="${filePath}"]`);
     if (listItem) {
+        listItem.className='deleted-list-item'
+        let deleteButton = listItem.getElementById('delete-button');
+        deleteButton.textContent = 'DELETED'
+        deleteButton.disabled = true;
         listItem.remove();
     }
 

@@ -12,6 +12,10 @@
     align-items: center; /* Aligns items vertically in the center */
 }
 
+.deleted-list-item {
+    background: #aaaaaa;
+}
+
 /*[class^="duplicate-block-"] {*/
 /*    margin-bottom: 1rem; !* Spacing between each block *!*/
 /*}*/
