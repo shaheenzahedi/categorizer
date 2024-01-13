@@ -200,6 +200,19 @@ ipcMain.handle('find-category-by-parent', async (event, parentId) => {
         });
     });
 });
+ipcMain.handle('find-logs', async (event) => {
+    return new Promise((resolve, reject) => {
+        db.find({}, (err, docs) => {
+            if (err) {
+                console.error('Error finding logs:', err);
+                reject(err); // Reject the promise if there's an error
+            } else {
+                console.log(`Found ${docs.length} logs`);
+                resolve(docs); // Resolve the promise with the found documents
+            }
+        });
+    });
+});
 ipcMain.handle('find-category-by-id', async (event, id) => {
     return new Promise((resolve, reject) => {
         db.find({type: 'category', _id: id}, (err, docs) => {
