@@ -29,21 +29,40 @@ ipcRenderer.on('duplicates-found', (event, obj) => {
 
 // Event listener for the "deleteAll" button
     deleteAllButton.addEventListener('click', () => {
+        const blocksWithUncheckedItems = [];
+
         // Loop through all the checkboxes in the duplicate blocks
         duplicatesArray.forEach((duplicateSet, index) => {
             const checkboxes = document.querySelectorAll(`.duplicate-block-${index} input[type="checkbox"]`);
+            let hasUncheckedItem = false;
             checkboxes.forEach((checkbox) => {
                 const filePath = checkbox.parentNode.getAttribute('data-filepath');
                 const isChecked = checkbox.checked;
 
                 // Add the file path and block number to the appropriate array based on the checkbox state
                 if (isChecked) {
-                    checkedItems.push({ path:filePath, blockNumber: index });
+                    checkedItems.push({path: filePath, blockNumber: index});
                 } else {
-                    uncheckedItems.push({ path: filePath, blockNumber: index });
+                    uncheckedItems.push({path: filePath, blockNumber: index});
+                    hasUncheckedItem = true;
                 }
             });
+            if (!hasUncheckedItem) {
+                // If no unchecked item found in a block, push the blockNumber to the array
+                blocksWithUncheckedItems.push(index + 1);
+            }
         });
+
+        if (blocksWithUncheckedItems.length > 0) {
+            const blockNumbersMessage = blocksWithUncheckedItems.join(', ');
+            alert(`Please uncheck at least one item in block(s) ${blockNumbersMessage}`);
+        } else {
+            // Proceed with other logic for deleting checked items
+            checkedItems.forEach((item) => {
+                    ipcRenderer.send('delete-file', item.path,`duplicate-block-${item.blockNumber}`);
+                }
+            );
+        }
         checkedItems.length = 0;
         uncheckedItems.length = 0;
     });
@@ -96,7 +115,7 @@ ipcRenderer.on('duplicates-found', (event, obj) => {
 
         // Add text as a span element before the divider inside the container
         const textSpan = document.createElement('span');
-        textSpan.textContent = '\t block number:\t'+ (index+1);
+        textSpan.textContent = '\t block number:\t' + (index + 1);
         breakLineContainer.insertBefore(textSpan, breakLine);
 
         // Append the container to the duplicatesList
@@ -120,7 +139,7 @@ ipcRenderer.on('duplicates-found', (event, obj) => {
 
 // Listen for the 'file-deleted' reply from main process
 ipcRenderer.on('file-deleted', (event, filePath, blockSelector) => {
-	const listItem = document.querySelector(`li[data-filepath="${CSS.escape(filePath)}"]`);
+    const listItem = document.querySelector(`li[data-filepath="${CSS.escape(filePath)}"]`);
     if (listItem) {
         listItem.remove();
     }
@@ -165,7 +184,7 @@ function createListItem(filePath, dir, blockSelector) {
     const checkbox = document.createElement('input');
     checkbox.setAttribute('id', 'checkbox-' + filePath); // Set a unique id for each checkbox
     checkbox.type = 'checkbox';
-    checkbox.checked=true;
+    checkbox.checked = true;
     checkbox.addEventListener('change', (event) => {
         const checkboxId = event.target.getAttribute('id');
         const isChecked = event.target.checked;
@@ -192,7 +211,7 @@ function createListItem(filePath, dir, blockSelector) {
     let deleteButton = document.createElement('button');
     deleteButton.classList.add('delete-button');
     deleteButton.onclick = function () {
-        ipcRenderer.send('delete-file', filePath);
+        ipcRenderer.send('delete-file', filePath, blockSelector);
     };
 
     const deleteIconElement = document.createElement('i');
@@ -201,6 +220,7 @@ function createListItem(filePath, dir, blockSelector) {
     item.appendChild(deleteButton);
     return item;
 }
+
 function openExplorer(directory) {
     // Use Electron's shell module to open the directory in the system's file explorer
     shell.showItemInFolder(directory);

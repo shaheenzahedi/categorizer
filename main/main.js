@@ -50,6 +50,7 @@ ipcMain.on('delete-file', async (event, filePath, blockSelector) => {
 
         // No error, so file move to the trash was successful.
         // Notify the renderer process of the success and include the blockSelector.
+        console.log('blockSelector',blockSelector)
         event.reply('file-deleted', filePath, blockSelector);
     } catch (error) {
 
