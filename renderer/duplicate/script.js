@@ -4,7 +4,17 @@ const path = require('path');
 document.getElementById('your-button-id').addEventListener('click', () => {
     ipcRenderer.send('open-file-dialog-for-directory');
 });
-
+document.addEventListener('DOMContentLoaded', async (event) => {
+    let databaseSelected = await ipcRenderer.invoke('get-database-selected');
+    let label = document.getElementById('database-label');
+    if (!databaseSelected) {
+        label.textContent = 'No database selected, nothing will be logged - please select a database';
+        label.style.color = '#FF0000'; // Set the text color to red
+    } else {
+        label.textContent = 'The database is selected';
+        label.style.color = '#00FF00'; // Set the text color to red
+    }
+});
 // Your existing 'duplicates-found' handler with slight modifications
 ipcRenderer.on('duplicates-found', (event, obj) => {
     var duplicatesArray = obj.dups;
@@ -59,7 +69,7 @@ ipcRenderer.on('duplicates-found', (event, obj) => {
         } else {
             // Proceed with other logic for deleting checked items
             checkedItems.forEach((item) => {
-                    ipcRenderer.send('delete-file', item.path,`duplicate-block-${item.blockNumber}`);
+                    ipcRenderer.send('delete-file', item.path, `duplicate-block-${item.blockNumber}`);
                 }
             );
         }

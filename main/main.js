@@ -20,6 +20,7 @@ function createWindow() {
 
     win.loadFile('renderer/index.html');
 }
+
 ipcMain.on('open-file-dialog', (event) => {
     dialog.showOpenDialog({
         properties: ['openFile']
@@ -45,30 +46,55 @@ ipcMain.on('open-file-dialog-for-directory', async (event) => {
 });
 ipcMain.on('delete-file', async (event, filePath, blockSelector) => {
     try {
-        // Move the file to the recycle bin (Windows) or Trash (macOS)
         await shell.trashItem(filePath);
+        if (db !== null) {
+            new Promise((resolve, reject) => {
+                const deleteLog = {
+                    type: 'deleted',
+                    path: filePath,
+                    createdAt: new Date()
+                };
 
-        // No error, so file move to the trash was successful.
-        // Notify the renderer process of the success and include the blockSelector.
-        console.log('blockSelector',blockSelector)
+                db.insert(deleteLog, (err, newDoc) => {
+                    if (err) {
+                        console.error('Error adding delete log:', err);
+                        reject(err);  // Reject the promise if there's an error
+                    } else {
+                        resolve(newDoc);  // Resolve the promise with the new document
+                    }
+                });
+            });
+        }
         event.reply('file-deleted', filePath, blockSelector);
     } catch (error) {
-
-        // Log the error in the console of the Main process.
         console.error(`Failed to delete ${filePath}: ${error}`);
-
-        // Notify the renderer process of the error and include the blockSelector.
         event.reply('file-deletion-error', error.message, filePath, blockSelector);
     }
 });
 
 async function scanDirectory(directoryPath, win) {
+    if (db !== null) {
+        new Promise((resolve, reject) => {
+            const scanDirectoryLog = {
+                type: 'scanDir',
+                path: directoryPath,
+                createdAt: new Date()
+            };
+
+            db.insert(scanDirectoryLog, (err, newDoc) => {
+                if (err) {
+                    console.error('Error adding scan directory log:', err);
+                    reject(err);  // Reject the promise if there's an error
+                } else {
+                    resolve(newDoc);  // Resolve the promise with the new document
+                }
+            });
+        });
+    }
     let filesChecksumMap = {}; // Maps checksums to file paths
     let duplicates = []; // Holds arrays of duplicates
     let totalFiles = 0; // Total number of files to track progress
     let processedFiles = 0; // Number of files processed to update progress
-
-    // Function to count all files before starting the processing
     async function countFiles(directory) {
         const items = await fsPromises.readdir(directory);
         for (const item of items) {
@@ -115,6 +141,24 @@ async function scanDirectory(directoryPath, win) {
 
     const duplicatesToSend = duplicates.filter(group => group.length > 1);
     win.webContents.send('duplicates-found', {dups: duplicatesToSend, dir: directoryPath});
+    if (db !== null) {
+        new Promise((resolve, reject) => {
+            const scanDirectoryFinishLog = {
+                type: 'scanDirFinish',
+                path: directoryPath,
+                createdAt: new Date()
+            };
+
+            db.insert(scanDirectoryFinishLog, (err, newDoc) => {
+                if (err) {
+                    console.error('Error adding scan directory log:', err);
+                    reject(err);  // Reject the promise if there's an error
+                } else {
+                    resolve(newDoc);  // Resolve the promise with the new document
+                }
+            });
+        });
+    }
 }
 
 async function generateChecksum(filePath) {
@@ -145,7 +189,7 @@ ipcMain.handle('save-database', async (event) => {
 
 ipcMain.handle('find-category-by-parent', async (event, parentId) => {
     return new Promise((resolve, reject) => {
-        db.find({ type: 'category', parentId: parentId }, (err, docs) => {
+        db.find({type: 'category', parentId: parentId}, (err, docs) => {
             if (err) {
                 console.error('Error finding categories by parent:', err);
                 reject(err); // Reject the promise if there's an error
@@ -158,7 +202,7 @@ ipcMain.handle('find-category-by-parent', async (event, parentId) => {
 });
 ipcMain.handle('find-category-by-id', async (event, id) => {
     return new Promise((resolve, reject) => {
-        db.find({ type: 'category', _id: id }, (err, docs) => {
+        db.find({type: 'category', _id: id}, (err, docs) => {
             if (err) {
                 console.error('Error finding category by ID:', err);
                 reject(err); // Reject the promise if there's an error
@@ -192,7 +236,7 @@ ipcMain.handle('add-category', async (event, args) => {
 ipcMain.handle('find-all-categories', async (event) => {
     return new Promise((resolve, reject) => {
         // Query the database for documents where the type is 'category'.
-        db.find({ type: 'category' }, (err, docs) => {
+        db.find({type: 'category'}, (err, docs) => {
             if (err) {
                 // If there's an error, log it and reject the promise.
                 console.error('Error finding all categories:', err);
