@@ -18,21 +18,85 @@ ipcRenderer.on('duplicates-found', (event, obj) => {
     pathSpan.textContent = "contents of {" + obj.dir + "}";
     pathSpan.classList.add('title-span');
     duplicatesList.appendChild(pathSpan);
+    const deleteAllButton = document.createElement('button');
+    deleteAllButton.classList.add('delete-selected');
+    deleteAllButton.textContent = 'Delete Selected';
+// Create an array to store the checked items with block number
+    const checkedItems = [];
+
+// Create an array to store the unchecked items with block number
+    const uncheckedItems = [];
+
+// Event listener for the "deleteAll" button
+    deleteAllButton.addEventListener('click', () => {
+        // Loop through all the checkboxes in the duplicate blocks
+        duplicatesArray.forEach((duplicateSet, index) => {
+            const checkboxes = document.querySelectorAll(`.duplicate-block-${index} input[type="checkbox"]`);
+            checkboxes.forEach((checkbox) => {
+                const filePath = checkbox.parentNode.getAttribute('data-filepath');
+                const isChecked = checkbox.checked;
+
+                // Add the file path and block number to the appropriate array based on the checkbox state
+                if (isChecked) {
+                    checkedItems.push({ path:filePath, blockNumber: index });
+                } else {
+                    uncheckedItems.push({ path: filePath, blockNumber: index });
+                }
+            });
+        });
+        checkedItems.length = 0;
+        uncheckedItems.length = 0;
+    });
+
+    duplicatesList.appendChild(deleteAllButton);
+// Create a button for selecting all checkboxes
+    const selectAllButton = document.createElement('button');
+    selectAllButton.classList.add('select-all');
+    selectAllButton.textContent = 'Select All';
+
+// Create a button for deselecting all checkboxes
+    const deselectAllButton = document.createElement('button');
+    deselectAllButton.classList.add('deselect-all');
+    deselectAllButton.textContent = 'Deselect All';
+
+// Event listener for the "select all" button
+    selectAllButton.addEventListener('click', () => {
+        const duplicateBlocks = document.querySelectorAll('[class^="duplicate-block-"]'); // Selects all elements whose class attribute value begins with "duplicate-block-"
+        duplicateBlocks.forEach((block) => {
+            const checkboxes = block.querySelectorAll('input[type="checkbox"]');
+            checkboxes.forEach((checkbox) => {
+                checkbox.checked = true;
+            });
+        });
+    });
+
+// Event listener for the "deselect all" button
+    deselectAllButton.addEventListener('click', () => {
+        const duplicateBlocks = document.querySelectorAll('[class^="duplicate-block-"]'); // Selects all elements whose class attribute value begins with "duplicate-block-"
+        duplicateBlocks.forEach((block) => {
+            const checkboxes = block.querySelectorAll('input[type="checkbox"]');
+            checkboxes.forEach((checkbox) => {
+                checkbox.checked = false;
+            });
+        });
+    });
+
+    duplicatesList.appendChild(selectAllButton);
+    duplicatesList.appendChild(deselectAllButton);
+
     duplicatesArray.forEach((duplicateSet, index) => {
-
-
         // Create a container for the text and divider
         const breakLineContainer = document.createElement('div');
         breakLineContainer.classList.add('mdc-list-divider-container');
 
-// Create the divider
+        // Create the divider
         const breakLine = document.createElement('div');
         breakLine.classList.add('mdc-list-divider');
         breakLineContainer.appendChild(breakLine);
 
-// Add text as a span element before the divider inside the container
+        // Add text as a span element before the divider inside the container
         const textSpan = document.createElement('span');
-        textSpan.textContent = '\t' + duplicateSet.length + ' duplicate found';
+        textSpan.textContent = '\t block number:\t'+ (index+1);
         breakLineContainer.insertBefore(textSpan, breakLine);
 
         // Append the container to the duplicatesList
@@ -95,13 +159,34 @@ function createListItem(filePath, dir, blockSelector) {
     item.setAttribute('data-filepath', filePath);
     item.classList.add('card');
 
+    // Create the label
+
+    // Create the checkbox
+    const checkbox = document.createElement('input');
+    checkbox.setAttribute('id', 'checkbox-' + filePath); // Set a unique id for each checkbox
+    checkbox.type = 'checkbox';
+    checkbox.checked=true;
+    checkbox.addEventListener('change', (event) => {
+        const checkboxId = event.target.getAttribute('id');
+        const isChecked = event.target.checked;
+        console.log('the id and isChecked', checkboxId, isChecked);
+    });
+    item.appendChild(checkbox);
+
     const textLink = document.createElement('a');
     textLink.textContent = filePath.replace(dir, "");
     textLink.href = '#';  // Set a placeholder href value or replace it with a meaningful value
-    textLink.addEventListener('click', () => openExplorer(filePath));
+    textLink.addEventListener('click', (event) => {
+        event.preventDefault(); // Prevent the default link behavior
+        openExplorer(filePath);
+    });
     textLink.classList.add('card-content');
-    item.appendChild(textLink);
+    const label = document.createElement('label');
+    label.setAttribute('for', 'checkbox-' + filePath);
 
+    label.appendChild(textLink);
+
+    item.appendChild(label);
 
     // Create and append the delete button with an icon
     let deleteButton = document.createElement('button');
@@ -110,11 +195,9 @@ function createListItem(filePath, dir, blockSelector) {
         ipcRenderer.send('delete-file', filePath);
     };
 
-    // Create the icon element for the delete button (using Font Awesome)
     const deleteIconElement = document.createElement('i');
     deleteIconElement.classList.add('fas', 'fa-trash'); // Adjust the class for the specific delete icon
     deleteButton.appendChild(deleteIconElement);
-
     item.appendChild(deleteButton);
     return item;
 }
