@@ -1,13 +1,9 @@
-const {app, BrowserWindow, ipcMain, dialog} = require('electron');
+const {app, BrowserWindow, shell, ipcMain, dialog} = require('electron');
 const path = require('path');
 const fs = require('fs');
 const fsPromises = require('fs').promises;
 const crypto = require('crypto');
-const {promisify} = require('util');
 const NeDB = require("nedb");
-const readDir = promisify(fs.readdir);
-const stat = promisify(fs.stat);
-const unlinkAsync = promisify(fs.unlink);
 
 let win;
 let db = null;
@@ -48,12 +44,11 @@ ipcMain.on('open-file-dialog-for-directory', async (event) => {
     }
 });
 ipcMain.on('delete-file', async (event, filePath, blockSelector) => {
-
     try {
-        // Perform the file deletion asynchronously
-        await unlinkAsync(filePath);
+        // Move the file to the recycle bin (Windows) or Trash (macOS)
+        await shell.trashItem(filePath);
 
-        // No error, so file deletion was successful.
+        // No error, so file move to the trash was successful.
         // Notify the renderer process of the success and include the blockSelector.
         event.reply('file-deleted', filePath, blockSelector);
     } catch (error) {

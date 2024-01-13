@@ -183,9 +183,6 @@ button:active::after {
 .wrapper ul li a:hover{
     color: #1a73e8;
 }
-input[type="checkbox"]{
-    display: none;
-}
 .content{
     position: absolute;
     top: 50%;

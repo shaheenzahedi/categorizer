@@ -141,7 +141,6 @@
     margin: 1rem auto;
 }
 
-/* If #title-span is at the top of the page, you might want to add some additional styles to the body to ensure there's no overlap */
 body {
     padding-top: 1rem; /* Adds padding at the top of the body, adjust this value as needed */
 }

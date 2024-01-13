@@ -1,4 +1,5 @@
-const {ipcRenderer} = require('electron');
+const {ipcRenderer, shell} = require('electron');
+const path = require('path');
 
 document.getElementById('your-button-id').addEventListener('click', () => {
     ipcRenderer.send('open-file-dialog-for-directory');
@@ -53,25 +54,10 @@ ipcRenderer.on('duplicates-found', (event, obj) => {
     });
 });
 
-// Function to create a delete button for each file
-function createDeleteButton(filePath) {
-    let deleteButton = document.createElement('button');
-    deleteButton.textContent = 'Delete';
-    deleteButton.classList.add('delete-button');
-    deleteButton.onclick = function () {
-        ipcRenderer.send('delete-file', filePath);
-    };
-    return deleteButton;
-}
-
 // Listen for the 'file-deleted' reply from main process
 ipcRenderer.on('file-deleted', (event, filePath, blockSelector) => {
-    const listItem = document.querySelector(`li[data-filepath="${filePath}"]`);
+	const listItem = document.querySelector(`li[data-filepath="${CSS.escape(filePath)}"]`);
     if (listItem) {
-        listItem.className='deleted-list-item'
-        let deleteButton = listItem.getElementById('delete-button');
-        deleteButton.textContent = 'DELETED'
-        deleteButton.disabled = true;
         listItem.remove();
     }
 
@@ -104,34 +90,38 @@ function updateDuplicateBlock(blockSelector) {
     }
 }
 
-// This function creates a list item to represent each file
 function createListItem(filePath, dir, blockSelector) {
     const item = document.createElement('li');
     item.setAttribute('data-filepath', filePath);
     item.classList.add('card');
-    const textSpan = document.createElement('span');
-    textSpan.textContent = filePath.replace(dir, "");
-    textSpan.classList.add('card-content');
-    item.appendChild(textSpan);
 
-    // Create and append the delete button
-    const deleteBtn = createDeleteButton(filePath, blockSelector);
-    item.appendChild(deleteBtn);
+    const textLink = document.createElement('a');
+    textLink.textContent = filePath.replace(dir, "");
+    textLink.href = '#';  // Set a placeholder href value or replace it with a meaningful value
+    textLink.addEventListener('click', () => openExplorer(filePath));
+    textLink.classList.add('card-content');
+    item.appendChild(textLink);
 
-    return item;
-}
 
-// Function to create a delete button for each file
-function createDeleteButton(filePath, blockSelector) {
+    // Create and append the delete button with an icon
     let deleteButton = document.createElement('button');
-    deleteButton.textContent = 'Delete';
     deleteButton.classList.add('delete-button');
     deleteButton.onclick = function () {
-        ipcRenderer.send('delete-file', filePath, blockSelector);
+        ipcRenderer.send('delete-file', filePath);
     };
-    return deleteButton;
-}
 
+    // Create the icon element for the delete button (using Font Awesome)
+    const deleteIconElement = document.createElement('i');
+    deleteIconElement.classList.add('fas', 'fa-trash'); // Adjust the class for the specific delete icon
+    deleteButton.appendChild(deleteIconElement);
+
+    item.appendChild(deleteButton);
+    return item;
+}
+function openExplorer(directory) {
+    // Use Electron's shell module to open the directory in the system's file explorer
+    shell.showItemInFolder(directory);
+}
 
 ipcRenderer.on('setup-progress-bar', () => {
     const progressBar = document.getElementById('progress-bar');
